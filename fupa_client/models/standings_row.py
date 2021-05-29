@@ -1,16 +1,17 @@
 class StandingsRow:
 
     def __init__(self, position, teamname, teamimage, games, wins, draws, loses, goals, countered_goals, points):
-        self.position = int(position) if not None else None
+        self.position = int(position) if position else None
         self.teamname = teamname
         self.teamimage = teamimage
-        self.games = int(games) if not None else None
-        self.wins = int(wins) if not None else None
-        self.draws = int(draws) if not None else None
-        self.loses = int(loses) if not None else None
-        self.goals = int(goals) if not None else None
-        self.countered_goals = int(countered_goals) if not None else None
-        self.points = int(points) if not None else None
+        self.games = int(games) if games else None
+        self.wins = int(wins) if wins else None
+        self.draws = int(draws) if draws else None
+        self.loses = int(loses) if loses else None
+        self.goals = int(goals) if goals else None
+        self.countered_goals = int(
+            countered_goals) if countered_goals else None
+        self.points = int(points) if points else None
 
     @classmethod
     def from_row_soup(cls, soup):
