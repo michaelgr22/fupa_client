@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup as _BeautifulSoup
-import json
 
 
 class Player:
