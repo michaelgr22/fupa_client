@@ -4,6 +4,7 @@ import collections
 from .fupa_remote_datasource import FupaRemoteDatasource
 from .models.player import Player
 from .models.match import Match
+from .models.standings_row import StandingsRow
 
 
 class FupaClient:
@@ -76,3 +77,16 @@ class FupaClient:
             league_and_dates[date] = league.text
 
         return collections.OrderedDict(sorted(league_and_dates.items()))
+
+    def get_standing(self):
+        soup = self.__soup_of_page(self.__league_url() + '/standing')
+        league_name = soup.find('h1').text
+        selector = "a[href*=\/team]"
+        tablerows_soup = soup.select(selector)
+
+        standings = {'league': league_name, 'standings': []}
+        for tablerow_soup in tablerows_soup:
+            standings_row = StandingsRow.from_row_soup(tablerow_soup)
+            standings['standings'].append(standings_row.to_dict())
+
+        return standings
