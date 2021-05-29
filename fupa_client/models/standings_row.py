@@ -1,16 +1,16 @@
 class StandingsRow:
 
     def __init__(self, position, teamname, teamimage, games, wins, draws, loses, goals, countered_goals, points):
-        self.position = position
+        self.position = int(position) if not None else None
         self.teamname = teamname
         self.teamimage = teamimage
-        self.games = games
-        self.wins = wins
-        self.draws = draws
-        self.loses = loses
-        self.goals = goals
-        self.countered_goals = countered_goals
-        self.points = points
+        self.games = int(games) if not None else None
+        self.wins = int(wins) if not None else None
+        self.draws = int(draws) if not None else None
+        self.loses = int(loses) if not None else None
+        self.goals = int(goals) if not None else None
+        self.countered_goals = int(countered_goals) if not None else None
+        self.points = int(points) if not None else None
 
     @classmethod
     def from_row_soup(cls, soup):
@@ -32,7 +32,6 @@ class StandingsRow:
         )
 
     def to_dict(self):
-        print(self.wins)
         return {'position': self.position, 'teamname': self.teamname, 'teamimage': self.teamimage, 'games': self.games, 'wins': self.wins, 'draws': self.draws,
                 'loses': self.loses, 'goals': self.goals, 'countered_goals': self.countered_goals, 'points': self.points}
 

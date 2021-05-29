@@ -9,10 +9,10 @@ class Match:
         self.date_time = date_time
         self.home_name = home_name
         self.home_image = home_image
-        self.home_goals = home_goals
+        self.home_goals = int(home_goals) if home_goals else None
         self.away_name = away_name
         self.away_image = away_image
-        self.away_goals = away_goals
+        self.away_goals = int(away_goals) if away_goals else None
         self.cancelled = cancelled
         self.league = league
 
@@ -22,16 +22,15 @@ class Match:
         time_or_result_str = cls.__find_string_with_colon(cls, spans)
         finished = not cls.__is_time(cls, time_or_result_str)
         cancelled = cls.__is_cancelled(cls, soup)
+        result = cls.__result(cls, time_or_result_str, finished, cancelled)
         return cls(
             date_time=cls.__date_time(cls, date, time_or_result_str, finished),
             home_name=spans[0].text,
             home_image=cls.__images_of_teams(cls, soup)[0]['src'],
-            home_goals=cls.__result(cls, time_or_result_str)[
-                0] if finished and not cancelled else None,
+            home_goals=result[0] if result else None,
             away_name=spans[-1].text,
             away_image=cls.__images_of_teams(cls, soup)[1]['src'],
-            away_goals=cls.__result(cls, time_or_result_str)[
-                1] if finished and not cancelled else None,
+            away_goals=result[1] if result else None,
             cancelled=cancelled,
             league=league
         )
@@ -49,8 +48,15 @@ class Match:
                 '{} {}'.format(date, time), '%Y-%m-%d %H:%M:%S')
             return self.__convert_datetime_to_local(self, utc_datetime).strftime('%Y-%m-%d %H:%M:%S')
 
-    def __result(self, result_string):
-        return result_string.split(':')
+    def __result(self, result_string, finished, cancelled):
+        if finished and not cancelled and self.__is_valid_result(self, result_string):
+            return [int(result_string.split(':')[0]), int(result_string.split(':')[1])]
+        return None
+
+    def __is_valid_result(self, result_string):
+        if result_string.split(':')[0].isdigit() and result_string.split(':')[1].isdigit():
+            return True
+        return False
 
     def __is_time(self, string):
         if string is None:

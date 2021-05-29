@@ -5,9 +5,9 @@ class Player:
 
     def __init__(self, name, age, deployments, goals, position, imagelink):
         self.name = name
-        self.age = age
-        self.deployments = deployments
-        self.goals = goals
+        self.age = int(age) if age else None
+        self.deployments = int(deployments) if deployments else None
+        self.goals = int(goals) if goals else None
         self.position = position
         self.imagelink = imagelink
 
