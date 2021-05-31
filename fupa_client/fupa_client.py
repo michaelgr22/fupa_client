@@ -25,7 +25,10 @@ class FupaClient:
 
     def __soup_of_page(self, url):
         datasource = FupaRemoteDatasource(url)
-        return datasource.scrap_page()
+        soup = datasource.scrap_page()
+        if not soup:
+            raise Exception('false url' + url)
+        return soup
 
     def get_squad(self):
         soup = self.__soup_of_page(self.__team_url())
