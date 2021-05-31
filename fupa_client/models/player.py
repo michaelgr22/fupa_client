@@ -1,6 +1,3 @@
-from bs4 import BeautifulSoup as _BeautifulSoup
-
-
 class Player:
 
     def __init__(self, name, age, deployments, goals, position, imagelink):

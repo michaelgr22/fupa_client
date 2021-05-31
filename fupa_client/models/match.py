@@ -1,4 +1,3 @@
-from bs4 import BeautifulSoup as _BeautifulSoup
 from datetime import datetime
 from dateutil import tz
 
