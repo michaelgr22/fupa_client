@@ -1,10 +1,10 @@
 from datetime import datetime
 import collections
 
-from .fupa_remote_datasource import FupaRemoteDatasource
-from .models.player import Player
-from .models.match import Match
-from .models.standings_row import StandingsRow
+from fupa_remote_datasource import FupaRemoteDatasource
+from models.player import Player
+from models.match import Match
+from models.standings_row import StandingsRow
 
 
 class FupaClient:
