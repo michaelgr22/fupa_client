@@ -11,6 +11,6 @@ setup(
     description=DESCRIPTION,
     long_description_content_type="text/markdown",
     long_description=LONG_DESCRIPTION,
-    packages=['fupa_client'],
+    packages=['fupa_client', 'fupa_client.models'],
     install_requires=['requests', 'beautifulsoup4', 'lxml', 'python-dateutil'],
 )
