@@ -5,6 +5,7 @@ from .fupa_remote_datasource import FupaRemoteDatasource
 from .models.match import Match
 from .models.player import Player
 from .models.standings_row import StandingsRow
+from .models.league import League
 
 
 class FupaClient:
@@ -22,6 +23,9 @@ class FupaClient:
         soup = self.__soup_of_page(self.__team_url())
         league_url = soup.select_one("a[href*=league]")['href']
         return self.base_url + league_url
+
+    def __league_name_on_league_soup(self, soup):
+        return soup.find('h1').text
 
     def __soup_of_page(self, url):
         datasource = FupaRemoteDatasource(url)
@@ -42,6 +46,13 @@ class FupaClient:
                 squad.append(player.to_dict())
 
         return squad
+
+    def get_league(self):
+        url = self.__league_url()
+        soup = self.__soup_of_page(self.__league_url() + '/standing')
+        league_name = self.__league_name_on_league_soup(soup)
+        league = League(league_name, url)
+        return league.to_dict()
 
     def get_matches(self):
         soup = self.__soup_of_page(self.__team_url() + '/matches')
@@ -83,7 +94,7 @@ class FupaClient:
 
     def get_standing(self):
         soup = self.__soup_of_page(self.__league_url() + '/standing')
-        league_name = soup.find('h1').text
+        league_name = self.__league_name_on_league_soup(soup)
         selector = "a[href*=\/team]"
         tablerows_soup = soup.select(selector)
 
