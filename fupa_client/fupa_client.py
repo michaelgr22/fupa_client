@@ -51,7 +51,7 @@ class FupaClient:
         url = self.__league_url()
         soup = self.__soup_of_page(self.__league_url() + '/standing')
         league_name = self.__league_name_on_league_soup(soup)
-        league = League(league_name, url)
+        league = League.from_link(league_name, url)
         return league.to_dict()
 
     def get_matches(self):
