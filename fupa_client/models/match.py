@@ -1,17 +1,25 @@
 from datetime import datetime
 from dateutil import tz
 
+from .. import helper as helper
+
 
 class Match:
 
-    def __init__(self, date_time, match_link, home_name, home_link, home_image, home_goals, away_name, away_link, away_image, away_goals, cancelled, league):
+    def __init__(self, date_time, match_link, home_showname, home_teamname, home_teamclass, home_season, home_link, home_image, home_goals, away_showname, away_teamname, away_teamclass, away_season, away_link, away_image, away_goals, cancelled, league):
         self.date_time = date_time
         self.match_link = match_link
-        self.home_name = home_name
+        self.home_showname = home_showname
+        self.home_teamname = home_teamname
+        self.home_teamclass = home_teamclass
+        self.home_season = home_season
         self.home_link = home_link
         self.home_image = home_image
         self.home_goals = int(home_goals) if home_goals else None
-        self.away_name = away_name
+        self.away_showname = away_showname
+        self.away_teamname = away_teamname
+        self.away_teamclass = away_teamclass
+        self.away_season = away_season
         self.away_link = away_link
         self.away_image = away_image
         self.away_goals = int(away_goals) if away_goals else None
@@ -27,14 +35,21 @@ class Match:
         result = cls.__result(cls, time_or_result_str, finished, cancelled)
         team_links = cls.__find_team_links(cls, soup, base_url)
         team_images = cls.__images_of_teams(cls, soup)
+        team_identifiers = cls.__get_team_identifier(cls, team_links)
         return cls(
             date_time=cls.__date_time(cls, date, time_or_result_str, finished),
             match_link=match_link,
-            home_name=spans[0].text,
+            home_showname=spans[0].text,
+            home_teamname=team_identifiers[0]['teamname'],
+            home_teamclass=team_identifiers[0]['teamclass'],
+            home_season=team_identifiers[0]['season'],
             home_link=team_links['home_link'],
             home_image=team_images['home_image'],
             home_goals=result[0] if result else None,
-            away_name=spans[-1].text,
+            away_showname=spans[-1].text,
+            away_teamname=team_identifiers[1]['teamname'],
+            away_teamclass=team_identifiers[1]['teamclass'],
+            away_season=team_identifiers[1]['season'],
             away_link=team_links['away_link'],
             away_image=team_images['away_image'],
             away_goals=result[1] if result else None,
@@ -43,8 +58,8 @@ class Match:
         )
 
     def to_dict(self):
-        return {'date_time': self.date_time, 'match_link': self.match_link, 'home_name': self.home_name, 'home_link': self.home_link, 'home_image': self.home_image, 'home_goals': self.home_goals,
-                'away_name': self.away_name, 'away_link': self.away_link, 'away_image': self.away_image, 'away_goals': self.away_goals, 'cancelled': self.cancelled, 'league': self.league}
+        return {'date_time': self.date_time, 'match_link': self.match_link, 'home_showname': self.home_showname, 'home_teamname': self.home_teamname, 'home_teamclass': self.home_teamclass, 'home_season': self.home_season, 'home_link': self.home_link, 'home_image': self.home_image, 'home_goals': self.home_goals,
+                'away_showname': self.away_showname, 'away_teamname': self.away_teamname, 'away_teamclass': self.away_teamclass, 'away_season': self.away_season, 'away_link': self.away_link, 'away_image': self.away_image, 'away_goals': self.away_goals, 'cancelled': self.cancelled, 'league': self.league}
 
     def __date_time(self, date, time_string, finished):
         if finished:
@@ -101,3 +116,6 @@ class Match:
         teams = list(dict.fromkeys(
             list(map(lambda links: links['href'], soup.select(selector)))))
         return {'home_link': base_url + teams[0], 'away_link': base_url + teams[1]}
+
+    def __get_team_identifier(self, teamlinks):
+        return [helper.extract_team_identifier_from_teamlink(teamlinks['home_link']), helper.extract_team_identifier_from_teamlink(teamlinks['away_link'])]
