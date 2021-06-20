@@ -67,10 +67,17 @@ class FupaClient:
             date = match_soup.parent['id']
             league = self.__find_league_of_match(
                 datetime.strptime(date, '%Y-%m-%d'), leagues_and_dates)
-            match_div = self.__soup_of_page(self.base_url + match_soup['href']).find(
+            match_link = self.base_url + match_soup['href']
+            match_div = self.__soup_of_page(match_link).find(
                 'a', href='/team/{}-{}-{}'.format(self.teamname, self.teamclass, self.season)).parent.parent
-            match = Match.from_match_soup(match_div, date, league)
-            matches.append(match.to_dict())
+            match = None
+            try:
+                match = Match.from_match_soup(
+                    match_div, date, league, match_link, self.base_url)
+            except:
+                pass
+            if match:
+                matches.append(match.to_dict())
 
         return matches
 
@@ -100,7 +107,8 @@ class FupaClient:
 
         standings = {'league': league_name, 'standings': []}
         for tablerow_soup in tablerows_soup:
-            standings_row = StandingsRow.from_row_soup(tablerow_soup)
+            standings_row = StandingsRow.from_row_soup(
+                tablerow_soup, self.base_url)
             standings['standings'].append(standings_row.to_dict())
 
         return standings

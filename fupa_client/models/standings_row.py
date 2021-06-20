@@ -1,8 +1,9 @@
 class StandingsRow:
 
-    def __init__(self, position, teamname, teamimage, games, wins, draws, loses, goals, countered_goals, points):
+    def __init__(self, position, teamname, teamlink, teamimage, games, wins, draws, loses, goals, countered_goals, points):
         self.position = int(position) if position else None
         self.teamname = teamname
+        self.teamlink = teamlink
         self.teamimage = teamimage
         self.games = int(games) if games else None
         self.wins = int(wins) if wins else None
@@ -14,13 +15,14 @@ class StandingsRow:
         self.points = int(points) if points else None
 
     @classmethod
-    def from_row_soup(cls, soup):
+    def from_row_soup(cls, soup, base_url):
         spans = cls.__remove_spans_with_no_content(cls, soup.findAll('span'))
         index_of_number_of_games = cls.__find_index_of_number_of_games(cls,
                                                                        spans)  # needed because some rows have (Auf) and (Ab) behind names
         return cls(
             position=spans[0].text.split('.')[0],
             teamname=spans[1].text,
+            teamlink=base_url+cls.__find_teamlink(cls, soup),
             teamimage=soup.find('img')['src'],
             games=spans[index_of_number_of_games].text,
             wins=spans[index_of_number_of_games+1].text.split('-')[0],
@@ -33,7 +35,7 @@ class StandingsRow:
         )
 
     def to_dict(self):
-        return {'position': self.position, 'teamname': self.teamname, 'teamimage': self.teamimage, 'games': self.games, 'wins': self.wins, 'draws': self.draws,
+        return {'position': self.position, 'teamname': self.teamname, 'teamlink': self.teamlink, 'teamimage': self.teamimage, 'games': self.games, 'wins': self.wins, 'draws': self.draws,
                 'loses': self.loses, 'goals': self.goals, 'countered_goals': self.countered_goals, 'points': self.points}
 
     def __remove_spans_with_no_content(self, spans):
@@ -47,3 +49,6 @@ class StandingsRow:
         for i in range(len(spans)):
             if spans[i].text.isdigit():
                 return i
+
+    def __find_teamlink(self, soup):
+        return soup['href']
