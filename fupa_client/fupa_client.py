@@ -5,7 +5,8 @@ from .fupa_remote_datasource import FupaRemoteDatasource
 from .models.match import Match
 from .models.player import Player
 from .models.standings_row import StandingsRow
-from .models.league import League
+
+from .repositories.league_repository import LeagueRepository
 
 
 class FupaClient:
@@ -15,6 +16,8 @@ class FupaClient:
         self.teamclass = teamclass
         self.season = season
         self.base_url = 'https://www.fupa.net'
+        self.team_url = '{}/team/{}-{}-{}'.format(
+            self.base_url, self.teamname, self.teamclass, self.season)
 
     def __team_url(self):
         return '{}/team/{}-{}-{}'.format(self.base_url, self.teamname, self.teamclass, self.season)
@@ -48,11 +51,8 @@ class FupaClient:
         return squad
 
     def get_league(self):
-        url = self.__league_url()
-        soup = self.__soup_of_page(self.__league_url() + '/standing')
-        league_name = self.__league_name_on_league_soup(soup)
-        league = League.from_link(league_name, url)
-        return league.to_dict()
+        league_repository = LeagueRepository(self.base_url, self.team_url)
+        return league_repository.get_league()
 
     def get_matches(self):
         soup = self.__soup_of_page(self.__team_url() + '/matches')
