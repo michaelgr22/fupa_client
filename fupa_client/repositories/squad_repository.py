@@ -1,5 +1,3 @@
-import sys
-
 from .. import helper as helper
 from ..models.player import Player
 

@@ -1,7 +1,7 @@
 from datetime import datetime
-from dateutil import tz
 
 from .. import helper as helper
+from .team import Team
 
 
 class Match:
@@ -27,33 +27,32 @@ class Match:
         self.league = league
 
     @classmethod
-    def from_match_soup(cls, soup, date, league, match_link, base_url):
-        spans = soup.findAll('span')
-        time_or_result_str = cls.__find_string_with_colon(cls, spans)
-        finished = not cls.__is_time(cls, time_or_result_str)
-        cancelled = cls.__is_cancelled(cls, soup)
-        result = cls.__result(cls, time_or_result_str, finished, cancelled)
-        team_links = cls.__find_team_links(cls, soup, base_url)
-        team_images = cls.__images_of_teams(cls, soup)
-        team_identifiers = cls.__get_team_identifier(cls, team_links)
+    def from_match_link(cls, link):
+        soup = helper.soup_of_page(link)
+        teams = cls.__find_teams(cls, soup)
+        images = cls.__find_images_of_teams(cls, soup)
+        result = cls.__find_result(cls, soup)
+        league = cls.__find_league(cls, soup)
+        date_time = cls.__find_date_time(cls, link)
+
         return cls(
-            date_time=cls.__date_time(cls, date, time_or_result_str, finished),
-            match_link=match_link,
-            home_showname=spans[0].text,
-            home_teamname=team_identifiers[0]['teamname'],
-            home_teamclass=team_identifiers[0]['teamclass'],
-            home_season=team_identifiers[0]['season'],
-            home_link=team_links['home_link'],
-            home_image=team_images['home_image'],
-            home_goals=result[0] if result else None,
-            away_showname=spans[-1].text,
-            away_teamname=team_identifiers[1]['teamname'],
-            away_teamclass=team_identifiers[1]['teamclass'],
-            away_season=team_identifiers[1]['season'],
-            away_link=team_links['away_link'],
-            away_image=team_images['away_image'],
-            away_goals=result[1] if result else None,
-            cancelled=cancelled,
+            date_time=date_time,
+            match_link=link,
+            home_showname=teams[0].showname,
+            home_teamname=teams[0].teamname,
+            home_teamclass=teams[0].teamclass,
+            home_season=teams[0].teamseason,
+            home_link=teams[0].teamlink,
+            home_image=images['home_image'],
+            home_goals=result['home_goals'],
+            away_showname=teams[1].showname,
+            away_teamname=teams[1].teamname,
+            away_teamclass=teams[1].teamclass,
+            away_season=teams[1].teamseason,
+            away_link=teams[1].teamlink,
+            away_image=images['away_image'],
+            away_goals=result['away_goals'],
+            cancelled=result['cancelled'],
             league=league
         )
 
@@ -61,18 +60,46 @@ class Match:
         return {'date_time': self.date_time, 'match_link': self.match_link, 'home_showname': self.home_showname, 'home_teamname': self.home_teamname, 'home_teamclass': self.home_teamclass, 'home_season': self.home_season, 'home_link': self.home_link, 'home_image': self.home_image, 'home_goals': self.home_goals,
                 'away_showname': self.away_showname, 'away_teamname': self.away_teamname, 'away_teamclass': self.away_teamclass, 'away_season': self.away_season, 'away_link': self.away_link, 'away_image': self.away_image, 'away_goals': self.away_goals, 'cancelled': self.cancelled, 'league': self.league}
 
-    def __date_time(self, date, time_string, finished):
-        if finished:
-            return '{} {}'.format(date, '00:00:00')
-        else:
-            time = time_string.split(' ')[1] + ':00'
-            utc_datetime = datetime.strptime(
-                '{} {}'.format(date, time), '%Y-%m-%d %H:%M:%S')
-            return self.__convert_datetime_to_local(self, utc_datetime).strftime('%Y-%m-%d %H:%M:%S')
+    def __find_teams(self, soup):
+        selector = "a[href*=\/team]"
+        team_links = list(dict.fromkeys(
+            list(map(lambda a: helper.base_url + a['href'], soup.select(selector)))))
+        return list(map(lambda link: Team.from_team_link(link), team_links))
 
-    def __result(self, result_string, finished, cancelled):
-        if finished and not cancelled and self.__is_valid_result(self, result_string):
-            return [int(result_string.split(':')[0]), int(result_string.split(':')[1])]
+    def __find_images_of_teams(self, soup):
+        images = soup.select('img')
+        return {'home_image': images[0]['src'], 'away_image': images[1]['src']}
+
+    def __find_result(self, soup):
+        selector = "a[href*=\/team]"
+        spans = soup.select_one(selector).parent.parent.findAll('span')
+        cancelled = self.__is_cancelled(self, spans)
+        if cancelled:
+            return {'home_goals': None, 'away_goals': None, 'cancelled': cancelled}
+        result = self.__find_string_with_colon_in_spans(self, spans)
+        if not result or not self.__is_valid_result(self, result):
+            return {'home_goals': None, 'away_goals': None, 'cancelled': cancelled}
+        return {'home_goals': int(result.split(':')[0]), 'away_goals': int(result.split(':')[1]), 'cancelled': cancelled}
+
+    def __find_league(self, soup):
+        link = helper.base_url + soup.find('h2').parent.parent['href']
+        soup = helper.soup_of_page(link)
+        return soup.find('h1').text
+
+    def __find_date_time(self, link):
+        info_link = link + '/info'
+        soup = helper.soup_of_page(info_link)
+        spans = soup.findAll('span')
+        for i in range(len(spans)):
+            if spans[i].text.startswith('Anstoß'):
+                time = spans[i].text.split(' ')[2]
+                date = spans[i+1].text.split(' ')[1]
+                return datetime.strptime("{} {}".format(date, time), '%d.%m.%Y %H:%M').strftime('%Y-%m-%d %H:%M:%S')
+
+    def __find_string_with_colon_in_spans(self, spans):
+        for span in spans:
+            if ':' in span.text:
+                return span.text
         return None
 
     def __is_valid_result(self, result_string):
@@ -80,42 +107,8 @@ class Match:
             return True
         return False
 
-    def __is_time(self, string):
-        if string is None:
-            return False
-        days = ('Mo, Di, Mi, Do, Fr, Sa, So')
-        for day in days:
-            if string.startswith(day):
-                return True
-        return False
-
     def __is_cancelled(self, spans):
         for span in spans:
             if 'abgesagt' in span.text:
                 return True
         return False
-
-    def __find_string_with_colon(self, spans):
-        for span in spans:
-            if ':' in span.text:
-                return span.text
-        return None
-
-    def __images_of_teams(self, soup):
-        images = soup.select('img')
-        return {'home_image': images[0]['src'], 'away_image': images[1]['src']}
-
-    def __convert_datetime_to_local(self, utc_datetime):
-        from_zone = tz.gettz('UTC')
-        to_zone = tz.gettz('Europe/Berlin')
-        utc_datetime = utc_datetime.replace(tzinfo=from_zone)
-        return utc_datetime.astimezone(to_zone)
-
-    def __find_team_links(self, soup, base_url):
-        selector = "a[href*=\/team]"
-        teams = list(dict.fromkeys(
-            list(map(lambda links: links['href'], soup.select(selector)))))
-        return {'home_link': base_url + teams[0], 'away_link': base_url + teams[1]}
-
-    def __get_team_identifier(self, teamlinks):
-        return [helper.extract_team_identifier_from_teamlink(teamlinks['home_link']), helper.extract_team_identifier_from_teamlink(teamlinks['away_link'])]
