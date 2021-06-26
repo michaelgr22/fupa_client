@@ -1,5 +1,7 @@
 from .. import helper as helper
 
+from .team import Team
+
 
 class StandingsRow:
 
@@ -25,23 +27,34 @@ class StandingsRow:
         spans = cls.__remove_spans_with_no_content(cls, soup.findAll('span'))
         index_of_number_of_games = cls.__find_index_of_number_of_games(cls,
                                                                        spans)  # needed because some rows have (Auf) and (Ab) behind names
-        team_identifier = cls.__get_team_identifier(cls, soup)
+        team = Team.from_team_link(
+            helper.base_url + cls.__find_team_link(cls, soup))
+        position = spans[0].text.split('.')[0]
+        teamimage = soup.find('img')['src']
+        games = spans[index_of_number_of_games].text
+        wins = spans[index_of_number_of_games+1].text.split('-')[0]
+        draws = spans[index_of_number_of_games+1].text.split('-')[1]
+        loses = spans[index_of_number_of_games+1].text.split('-')[2]
+        goals = spans[index_of_number_of_games+2].text.split(':')[0]
+        countered_goals = spans[index_of_number_of_games +
+                                2].text.split(':')[1]
+        points = spans[index_of_number_of_games+4].text
+
         return cls(
-            position=spans[0].text.split('.')[0],
-            showname=spans[1].text,
-            teamname=team_identifier['teamname'],
-            teamclass=team_identifier['teamclass'],
-            season=team_identifier['season'],
-            teamlink=helper.base_url+cls.__find_team_link(cls, soup),
-            teamimage=soup.find('img')['src'],
-            games=spans[index_of_number_of_games].text,
-            wins=spans[index_of_number_of_games+1].text.split('-')[0],
-            draws=spans[index_of_number_of_games+1].text.split('-')[1],
-            loses=spans[index_of_number_of_games+1].text.split('-')[2],
-            goals=spans[index_of_number_of_games+2].text.split(':')[0],
-            countered_goals=spans[index_of_number_of_games +
-                                  2].text.split(':')[1],
-            points=spans[index_of_number_of_games+4].text
+            position=position,
+            showname=team.showname,
+            teamname=team.teamname,
+            teamclass=team.teamclass,
+            season=team.teamseason,
+            teamlink=team.teamlink,
+            teamimage=teamimage,
+            games=games,
+            wins=wins,
+            draws=draws,
+            loses=loses,
+            goals=goals,
+            countered_goals=countered_goals,
+            points=points
         )
 
     def to_dict(self):
@@ -62,7 +75,3 @@ class StandingsRow:
 
     def __find_team_link(self, soup):
         return soup['href']
-
-    def __get_team_identifier(self, soup):
-        teamlink = self.__find_team_link(self, soup)
-        return helper.extract_team_identifier_from_teamlink(teamlink)
