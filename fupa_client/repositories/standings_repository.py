@@ -1,6 +1,6 @@
 from .. import helper as helper
 from ..models.standings_row import StandingsRow
-from.league_repository import LeagueRepository
+from .league_repository import LeagueRepository
 
 
 class StandingsRepository:
@@ -19,6 +19,6 @@ class StandingsRepository:
         rows = soup.select(selector)
         return list(map(self.__row_soup_to_dict, rows))
 
-    def __row_soup_to_dict(self, row):
-        standings_row = StandingsRow.from_row_soup(row)
+    def __row_soup_to_dict(self, soup):
+        standings_row = StandingsRow.from_row_soup(soup)
         return standings_row.to_dict()

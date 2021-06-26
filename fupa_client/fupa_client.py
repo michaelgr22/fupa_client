@@ -3,11 +3,10 @@ import collections
 
 from .fupa_remote_datasource import FupaRemoteDatasource
 from .models.match import Match
-from .models.player import Player
-from .models.standings_row import StandingsRow
 
 from .repositories.league_repository import LeagueRepository
 from .repositories.standings_repository import StandingsRepository
+from .repositories.squad_repository import SquadRepository
 
 
 class FupaClient:
@@ -31,17 +30,8 @@ class FupaClient:
         return soup
 
     def get_squad(self):
-        soup = self.__soup_of_page(self.__team_url())
-        positions = ('Torwart', 'Abwehr', 'Mittelfeld', 'Angriff')
-
-        squad = []
-        for position in positions:
-            parent = soup.find('h3', text=position).parent
-            for child in parent.findChildren('div', recursive=False):
-                player = Player.from_squad_soup(child, position)
-                squad.append(player.to_dict())
-
-        return squad
+        squad_repository = SquadRepository(self.team_url)
+        return squad_repository.get_squad()
 
     def get_league(self):
         league_repository = LeagueRepository(self.team_url)
