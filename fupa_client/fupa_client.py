@@ -1,3 +1,5 @@
+from . import helper
+
 from .repositories.league_repository import LeagueRepository
 from .repositories.standings_repository import StandingsRepository
 from .repositories.squad_repository import SquadRepository
@@ -10,9 +12,8 @@ class FupaClient:
         self.teamname = teamname
         self.teamclass = teamclass
         self.season = season
-        self.base_url = 'https://www.fupa.net'
         self.team_url = '{}/team/{}-{}-{}'.format(
-            self.base_url, self.teamname, self.teamclass, self.season)
+            helper.base_url, self.teamname, self.teamclass, self.season)
         self.squad_repository = SquadRepository(self.team_url)
         self.matches_repository = MatchesRepository(self.team_url)
         self.standings_repository = StandingsRepository(self.team_url)
