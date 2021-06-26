@@ -1,5 +1,7 @@
 from .fupa_remote_datasource import FupaRemoteDatasource
 
+base_url = 'https://www.fupa.net'
+
 
 def extract_team_identifier_from_teamlink(link):
     team = {}

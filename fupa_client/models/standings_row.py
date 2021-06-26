@@ -21,7 +21,7 @@ class StandingsRow:
         self.points = int(points) if points else None
 
     @classmethod
-    def from_row_soup(cls, soup, base_url):
+    def from_row_soup(cls, soup):
         spans = cls.__remove_spans_with_no_content(cls, soup.findAll('span'))
         index_of_number_of_games = cls.__find_index_of_number_of_games(cls,
                                                                        spans)  # needed because some rows have (Auf) and (Ab) behind names
@@ -32,7 +32,7 @@ class StandingsRow:
             teamname=team_identifier['teamname'],
             teamclass=team_identifier['teamclass'],
             season=team_identifier['season'],
-            teamlink=base_url+cls.__find_team_link(cls, soup),
+            teamlink=helper.base_url+cls.__find_team_link(cls, soup),
             teamimage=soup.find('img')['src'],
             games=spans[index_of_number_of_games].text,
             wins=spans[index_of_number_of_games+1].text.split('-')[0],

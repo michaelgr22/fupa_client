@@ -7,6 +7,7 @@ from .models.player import Player
 from .models.standings_row import StandingsRow
 
 from .repositories.league_repository import LeagueRepository
+from .repositories.standings_repository import StandingsRepository
 
 
 class FupaClient:
@@ -21,14 +22,6 @@ class FupaClient:
 
     def __team_url(self):
         return '{}/team/{}-{}-{}'.format(self.base_url, self.teamname, self.teamclass, self.season)
-
-    def __league_url(self):
-        soup = self.__soup_of_page(self.__team_url())
-        league_url = soup.select_one("a[href*=league]")['href']
-        return self.base_url + league_url
-
-    def __league_name_on_league_soup(self, soup):
-        return soup.find('h1').text
 
     def __soup_of_page(self, url):
         datasource = FupaRemoteDatasource(url)
@@ -51,7 +44,7 @@ class FupaClient:
         return squad
 
     def get_league(self):
-        league_repository = LeagueRepository(self.base_url, self.team_url)
+        league_repository = LeagueRepository(self.team_url)
         return league_repository.get_league()
 
     def get_matches(self):
@@ -100,15 +93,5 @@ class FupaClient:
         return collections.OrderedDict(sorted(league_and_dates.items()))
 
     def get_standing(self):
-        soup = self.__soup_of_page(self.__league_url() + '/standing')
-        league_name = self.__league_name_on_league_soup(soup)
-        selector = "a[href*=\/team]"
-        tablerows_soup = soup.select(selector)
-
-        standings = {'league': league_name, 'standings': []}
-        for tablerow_soup in tablerows_soup:
-            standings_row = StandingsRow.from_row_soup(
-                tablerow_soup, self.base_url)
-            standings['standings'].append(standings_row.to_dict())
-
-        return standings
+        standings_repository = StandingsRepository(self.team_url)
+        return standings_repository.get_standing()
