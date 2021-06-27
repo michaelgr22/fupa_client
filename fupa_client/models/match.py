@@ -1,12 +1,15 @@
 from datetime import datetime
+from os import name
 
 from .. import helper as helper
 from .team import Team
+from .league import League
 
 
 class Match:
 
-    def __init__(self, date_time, match_link, home_showname, home_teamname, home_teamclass, home_season, home_link, home_image, home_goals, away_showname, away_teamname, away_teamclass, away_season, away_link, away_image, away_goals, cancelled, league):
+    def __init__(self, date_time, match_link, home_showname, home_teamname, home_teamclass, home_season, home_link, home_image, home_goals, away_showname,
+                 away_teamname, away_teamclass, away_season, away_link, away_image, away_goals, cancelled, league_showname, league_name, league_link):
         self.date_time = date_time
         self.match_link = match_link
         self.home_showname = home_showname
@@ -24,7 +27,9 @@ class Match:
         self.away_image = away_image
         self.away_goals = int(away_goals) if away_goals else None
         self.cancelled = cancelled
-        self.league = league
+        self.league_showname = league_showname
+        self.league_name = league_name
+        self.league_link = league_link
 
     @classmethod
     def from_match_link(cls, link):
@@ -53,12 +58,17 @@ class Match:
             away_image=images['away_image'],
             away_goals=result['away_goals'],
             cancelled=result['cancelled'],
-            league=league
+            league_showname=league.showname,
+            league_name=league.leaguename,
+            league_link=league.leaguelink
         )
 
     def to_dict(self):
-        return {'date_time': self.date_time, 'match_link': self.match_link, 'home_showname': self.home_showname, 'home_teamname': self.home_teamname, 'home_teamclass': self.home_teamclass, 'home_season': self.home_season, 'home_link': self.home_link, 'home_image': self.home_image, 'home_goals': self.home_goals,
-                'away_showname': self.away_showname, 'away_teamname': self.away_teamname, 'away_teamclass': self.away_teamclass, 'away_season': self.away_season, 'away_link': self.away_link, 'away_image': self.away_image, 'away_goals': self.away_goals, 'cancelled': self.cancelled, 'league': self.league}
+        return {'date_time': self.date_time, 'match_link': self.match_link, 'home_showname': self.home_showname, 'home_teamname': self.home_teamname,
+                'home_teamclass': self.home_teamclass, 'home_season': self.home_season, 'home_link': self.home_link, 'home_image': self.home_image,
+                'home_goals': self.home_goals, 'away_showname': self.away_showname, 'away_teamname': self.away_teamname, 'away_teamclass': self.away_teamclass,
+                'away_season': self.away_season, 'away_link': self.away_link, 'away_image': self.away_image, 'away_goals': self.away_goals,
+                'cancelled': self.cancelled, 'league_showname': self.league_showname, 'league_name': self.league_name, 'league_link': self.league_link}
 
     def __find_teams(self, soup):
         selector = "a[href*=\/team]"
@@ -83,8 +93,8 @@ class Match:
 
     def __find_league(self, soup):
         link = helper.base_url + soup.find('h2').parent.parent['href']
-        soup = helper.soup_of_page(link)
-        return soup.find('h1').text
+        league = League.from_link(link)
+        return league
 
     def __find_date_time(self, link):
         info_link = link + '/info'

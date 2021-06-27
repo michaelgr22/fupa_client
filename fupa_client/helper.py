@@ -17,7 +17,7 @@ def extract_team_identifier_from_teamlink(link):
 
 
 def extract_league_identifier_from_leaguelink(link):
-    league = {}
+    league = {'leaguename': None, 'season': None}
     splitted_link = link.split('/')
     for i in range(len(splitted_link)):
         if splitted_link[i] == 'league':
