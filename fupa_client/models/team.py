@@ -24,6 +24,9 @@ class Team:
             teamlink=link
         )
 
+    def to_dict(self):
+        return {'showname': self.showname, 'teamname': self.teamname, 'teamclass': self.teamclass, 'teamseason': self.teamseason, 'teamlink': self.teamlink}
+
     def __extract_team_identifier_from_teamlink(self, link):
         team = {}
         splitted_link = link.split('/')

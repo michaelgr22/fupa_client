@@ -1,3 +1,4 @@
+from fupa_client.repositories.team_repository import TeamRepository
 from . import helper
 
 from .repositories.league_repository import LeagueRepository
@@ -18,6 +19,7 @@ class FupaClient:
         self.matches_repository = MatchesRepository(self.team_url)
         self.standings_repository = StandingsRepository(self.team_url)
         self.league_repository = LeagueRepository(self.team_url)
+        self.team_repository = TeamRepository(self.team_url)
 
     def get_squad(self):
         return self.squad_repository.get_squad()
@@ -33,3 +35,6 @@ class FupaClient:
 
     def get_standing(self):
         return self.standings_repository.get_standing()
+
+    def get_team(self):
+        return self.team_repository.get_team()
