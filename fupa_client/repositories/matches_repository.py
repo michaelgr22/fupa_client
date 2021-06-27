@@ -2,6 +2,7 @@ from time import sleep
 
 from .. import helper as helper
 from ..models.match import Match
+from ..models.team import Team
 
 
 class MatchesRepository:
@@ -23,11 +24,10 @@ class MatchesRepository:
         return match.to_dict()
 
     def __matches_of_team(self):
-        team_identifier = helper.extract_team_identifier_from_teamlink(
-            self.team_url)
+        team = Team.from_team_link(self.team_url)
         soup = helper.soup_of_page(self.team_url + '/matches')
         selector = 'a[href*={}-{}][href*=\/match][enablehover*=true]'.format(
-            team_identifier['teamname'], team_identifier['teamclass'])
+            team.teamname, team.teamclass)
         return soup.select(selector)
 
     def __match_soup_to_dict(self, soup):
@@ -38,5 +38,5 @@ class MatchesRepository:
                 return match.to_dict()
             return None
         except Exception as e:
-            print(e)
+            print(e) + " " + link
             return None
