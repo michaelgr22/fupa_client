@@ -33,6 +33,9 @@ class FupaClient:
     def get_match_from_link(self, link):
         return self.matches_repository.get_match_from_link(link)
 
+    def get_matches_of_league(self):
+        return self.matches_repository.get_matches_of_league()
+
     def get_standing(self):
         return self.standings_repository.get_standing()
 
