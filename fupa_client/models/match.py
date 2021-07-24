@@ -18,14 +18,16 @@ class Match:
         self.home_season = home_season
         self.home_link = home_link
         self.home_image = home_image
-        self.home_goals = int(home_goals) if home_goals else None
+        self.home_goals = int(home_goals) if isinstance(
+            home_goals, int) else None
         self.away_showname = away_showname
         self.away_teamname = away_teamname
         self.away_teamclass = away_teamclass
         self.away_season = away_season
         self.away_link = away_link
         self.away_image = away_image
-        self.away_goals = int(away_goals) if away_goals else None
+        self.away_goals = int(away_goals) if isinstance(
+            away_goals, int) else None
         self.cancelled = cancelled
         self.league_showname = league_showname
         self.league_name = league_name
@@ -37,7 +39,7 @@ class Match:
         teams = cls.__find_teams(cls, soup)
         images = cls.__find_images_of_teams(cls, soup)
         result = cls.__find_result(cls, soup)
-        league = cls.__find_league(cls, soup)
+        league = cls.__find_league(cls, soup, teams[0].teamseason)
         date_time = cls.__find_date_time(cls, link)
 
         return cls(
@@ -91,10 +93,14 @@ class Match:
             return {'home_goals': None, 'away_goals': None, 'cancelled': cancelled}
         return {'home_goals': int(result.split(':')[0]), 'away_goals': int(result.split(':')[1]), 'cancelled': cancelled}
 
-    def __find_league(self, soup):
-        link = helper.base_url + soup.find('h2').parent.parent['href']
-        league = League.from_link(link)
-        return league
+    def __find_league(self, soup, season):
+        try:
+            link = helper.base_url + soup.find('h2').parent.parent['href']
+            league = League.from_link(link)
+            return league
+        except:
+            league_showname = soup.find('h2').text
+            return League(league_showname, league_showname, season, None)
 
     def __find_date_time(self, link):
         info_link = link + '/info'

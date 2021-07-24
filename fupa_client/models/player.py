@@ -9,8 +9,9 @@ class Player:
         self.firstname = firstname
         self.surname = surname
         self.birthday = birthday
-        self.deployments = int(deployments) if deployments else None
-        self.goals = int(goals) if goals else None
+        self.deployments = int(deployments) if isinstance(
+            deployments, int) else None
+        self.goals = int(goals) if isinstance(goals, int) else None
         self.position = position
         self.imagelink = imagelink
         self.playerlink = playerlink
