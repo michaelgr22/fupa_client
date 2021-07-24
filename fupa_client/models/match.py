@@ -4,6 +4,7 @@ from os import name
 from .. import helper as helper
 from .team import Team
 from .league import League
+from ..repositories.league_repository import LeagueRepository
 
 
 class Match:
@@ -39,7 +40,8 @@ class Match:
         teams = cls.__find_teams(cls, soup)
         images = cls.__find_images_of_teams(cls, soup)
         result = cls.__find_result(cls, soup)
-        league = cls.__find_league(cls, soup, teams[0].teamseason)
+        # Parameter is home_team or away_team to find right league
+        league = cls.__find_league(cls, teams[0])
         date_time = cls.__find_date_time(cls, link)
 
         return cls(
@@ -93,14 +95,10 @@ class Match:
             return {'home_goals': None, 'away_goals': None, 'cancelled': cancelled}
         return {'home_goals': int(result.split(':')[0]), 'away_goals': int(result.split(':')[1]), 'cancelled': cancelled}
 
-    def __find_league(self, soup, season):
-        try:
-            link = helper.base_url + soup.find('h2').parent.parent['href']
-            league = League.from_link(link)
-            return league
-        except:
-            league_showname = soup.find('h2').text
-            return League(league_showname, league_showname, season, None)
+    def __find_league(self, team):
+        league_repository = LeagueRepository(team.teamlink)
+        league = league_repository.get_league()
+        return League(league['showname'], league['leaguename'], league['season'], league['leaguelink'])
 
     def __find_date_time(self, link):
         info_link = link + '/info'

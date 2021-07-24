@@ -41,20 +41,21 @@ class StandingsRow:
         points = spans[index_of_number_of_games+4].text
 
         return cls(
-            position=position,
+            position=int(position) if position.isdigit() else None,
             showname=team.showname,
             teamname=team.teamname,
             teamclass=team.teamclass,
             season=team.teamseason,
             teamlink=team.teamlink,
             teamimage=teamimage,
-            games=games,
-            wins=wins,
-            draws=draws,
-            loses=loses,
-            goals=goals,
-            countered_goals=countered_goals,
-            points=points
+            games=int(games) if games.isdigit() else None,
+            wins=int(wins) if wins.isdigit() else None,
+            draws=int(draws) if draws.isdigit() else None,
+            loses=int(loses) if loses.isdigit() else None,
+            goals=int(goals) if goals.isdigit() else None,
+            countered_goals=int(
+                countered_goals) if countered_goals.isdigit() else None,
+            points=int(points) if points.isdigit() else None
         )
 
     def to_dict(self):

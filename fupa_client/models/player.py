@@ -37,8 +37,9 @@ class Player:
                 firstname=firstname,
                 surname=surname,
                 birthday=birthday,
-                deployments=deployments,
-                goals=goals,
+                deployments=int(
+                    deployments) if deployments.isdigit() else None,
+                goals=int(goals) if goals.isdigit() else None,
                 position=position,
                 imagelink=imagelink,
                 playerlink=playerlink

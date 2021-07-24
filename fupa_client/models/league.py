@@ -9,7 +9,7 @@ class League:
         self.leaguelink = leaguelink
 
     @classmethod
-    def from_link(cls, link):
+    def from_link(cls, link, season):
         soup = helper.soup_of_page(link + '/standing')
         showname = cls.__league_name_on_league_soup(cls, soup)
         league_identifier = cls.__extract_league_identifier_from_leaguelink(
@@ -17,7 +17,7 @@ class League:
         return cls(
             showname=showname,
             leaguename=league_identifier['leaguename'],
-            season=league_identifier['season'],
+            season=season,
             leaguelink=link
         )
 
@@ -33,6 +33,4 @@ class League:
         for i in range(len(splitted_link)):
             if splitted_link[i] == 'league':
                 league['leaguename'] = splitted_link[i + 1]
-            if splitted_link[i] == 'season':
-                league['season'] = splitted_link[i + 1]
         return league
