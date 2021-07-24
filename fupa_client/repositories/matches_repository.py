@@ -28,7 +28,7 @@ class MatchesRepository:
             match = self.__match_soup_to_dict(match_soup)
             if match is not None:
                 matches_list.append(match)
-            sleep(5)
+            sleep(3)
         return matches_list
 
     def __matches_of_team(self):
