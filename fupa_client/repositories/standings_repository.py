@@ -7,12 +7,12 @@ class StandingsRepository:
     def __init__(self, team_url):
         self.team_url = team_url
 
-    def get_standing(self):
+    def get_standing_as_dict(self):
         league_repository = LeagueRepository(self.team_url)
         league = league_repository.get_league()
 
-        return {'league_showname': league['showname'], 'league_name': league['leaguename'],
-                'league_season': league['season'], 'leaguelink': league['leaguelink'], 'standings': self.__standings_rows(league['leaguelink'])}
+        return {'league_showname': league.showname, 'league_name': league.leaguename,
+                'league_season': league.season, 'leaguelink': league.leaguelink, 'standings': self.__standings_rows(league.leaguelink)}
 
     def __standings_rows(self, link):
         soup = helper.soup_of_page(link + '/standing')

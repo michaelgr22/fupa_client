@@ -22,22 +22,22 @@ class FupaClient:
         self.team_repository = TeamRepository(self.team_url)
 
     def get_squad(self):
-        return self.squad_repository.get_squad()
+        return self.squad_repository.get_squad_as_dict()
 
     def get_league(self):
-        return self.league_repository.get_league()
+        return self.league_repository.get_league_as_dict()
 
     def get_matches(self):
-        return self.matches_repository.get_matches()
+        return self.matches_repository.get_matches_as_dict()
 
     def get_match_from_link(self, link):
-        return self.matches_repository.get_match_from_link(link)
+        return self.matches_repository.get_match_from_link_as_dict(link)
 
     def get_matches_of_league(self):
-        return self.matches_repository.get_matches_of_league()
+        return self.matches_repository.get_matches_of_league_as_dict()
 
     def get_standing(self):
-        return self.standings_repository.get_standing()
+        return self.standings_repository.get_standing_as_dict()
 
     def get_team(self):
-        return self.team_repository.get_team()
+        return self.team_repository.get_team_as_dict()

@@ -97,8 +97,7 @@ class Match:
 
     def __find_league(self, team):
         league_repository = LeagueRepository(team.teamlink)
-        league = league_repository.get_league()
-        return League(league['showname'], league['leaguename'], league['season'], league['leaguelink'])
+        return league_repository.get_league()
 
     def __find_date_time(self, link):
         info_link = link + '/info'

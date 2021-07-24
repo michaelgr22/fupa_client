@@ -6,6 +6,6 @@ class TeamRepository:
     def __init__(self, team_url):
         self.team_url = team_url
 
-    def get_team(self):
+    def get_team_as_dict(self):
         team = Team.from_team_link(self.team_url)
         return team.to_dict()

@@ -6,7 +6,7 @@ class SquadRepository:
     def __init__(self, team_url):
         self.team_url = team_url
 
-    def get_squad(self):
+    def get_squad_as_dict(self):
         return self.__players()
 
     def __players(self):
