@@ -33,4 +33,6 @@ class League:
         for i in range(len(splitted_link)):
             if splitted_link[i] == 'league':
                 league['leaguename'] = splitted_link[i + 1]
+            if splitted_link[i] == 'cup':
+                league['leaguename'] = splitted_link[i + 1]
         return league

@@ -40,8 +40,8 @@ class Match:
         teams = cls.__find_teams(cls, soup)
         images = cls.__find_images_of_teams(cls, soup)
         result = cls.__find_result(cls, soup)
-        # Parameter is home_team or away_team to find right league
-        league = cls.__find_league(cls, teams[0])
+        # Season is season of Home or away team
+        league = cls.__find_league(cls, soup, teams[0].teamseason)
         date_time = cls.__find_date_time(cls, link)
 
         return cls(
@@ -95,9 +95,14 @@ class Match:
             return {'home_goals': None, 'away_goals': None, 'cancelled': cancelled}
         return {'home_goals': int(result.split(':')[0]), 'away_goals': int(result.split(':')[1]), 'cancelled': cancelled}
 
-    def __find_league(self, team):
-        league_repository = LeagueRepository(team.teamlink)
-        return league_repository.get_league()
+    def __find_league(self, soup, season):
+        try:
+            link = helper.base_url + soup.find('h2').parent.parent['href']
+            league = League.from_link(link, season)
+            return league
+        except:
+            league_showname = soup.find('h2').text
+            return League(league_showname, league_showname, season, None)
 
     def __find_date_time(self, link):
         info_link = link + '/info'
