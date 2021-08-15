@@ -1,5 +1,6 @@
 from datetime import datetime
 from os import name
+from pytz import timezone
 
 from .. import helper as helper
 from .team import Team
@@ -95,7 +96,8 @@ class Match:
             return {'home_goals': None, 'away_goals': None, 'cancelled': cancelled}
 
         result = self.__find_string_with_colon_in_spans(self, spans)
-        if not result or not self.__is_valid_result(self, result):
+
+        if not result or not self.__is_valid_result(self, result, date_time):
             return {'home_goals': None, 'away_goals': None, 'cancelled': cancelled}
         return {'home_goals': int(result.split(':')[0]), 'away_goals': int(result.split(':')[1]), 'cancelled': cancelled}
 
@@ -124,9 +126,14 @@ class Match:
                 return span.text
         return None
 
-    def __is_valid_result(self, result_string):
-        if result_string.split(':')[0].isdigit() and result_string.split(':')[1].isdigit():
-            return True
+    def __is_valid_result(self, result_string, date_time):
+        berlin_tz = timezone('Europe/Amsterdam')
+        time = berlin_tz.localize(date_time).strftime('%H:%M')
+
+        result = result_string.split(':')
+        if result[0].isdigit() and result[1].isdigit():
+            if result_string != time:  # Because when there is no ticker time is shown during match which can also interpretet as result
+                return True
         return False
 
     def __is_cancelled(self, spans):
