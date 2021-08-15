@@ -39,13 +39,14 @@ class Match:
         soup = helper.soup_of_page(link)
         teams = cls.__find_teams(cls, soup)
         images = cls.__find_images_of_teams(cls, soup)
-        result = cls.__find_result(cls, soup)
+        date_time = cls.__find_date_time(cls, link)
+        result = cls.__find_result(cls, soup, date_time)
         # Season is season of Home or away team
         league = cls.__find_league(cls, soup, teams[0].teamseason)
-        date_time = cls.__find_date_time(cls, link)
 
+        date_time_str = date_time.strftime('%Y-%m-%d %H:%M:%S')
         return cls(
-            date_time=date_time,
+            date_time=date_time_str,
             match_link=link,
             home_showname=teams[0].showname,
             home_teamname=teams[0].teamname,
@@ -84,12 +85,15 @@ class Match:
         images = soup.select('img')
         return {'home_image': images[0]['src'], 'away_image': images[1]['src']}
 
-    def __find_result(self, soup):
+    def __find_result(self, soup, date_time):
         selector = "a[href*=\/team]"
         spans = soup.select_one(selector).parent.parent.findAll('span')
+
         cancelled = self.__is_cancelled(self, spans)
-        if cancelled:
+
+        if datetime.now() < date_time:
             return {'home_goals': None, 'away_goals': None, 'cancelled': cancelled}
+
         result = self.__find_string_with_colon_in_spans(self, spans)
         if not result or not self.__is_valid_result(self, result):
             return {'home_goals': None, 'away_goals': None, 'cancelled': cancelled}
@@ -112,7 +116,7 @@ class Match:
             if spans[i].text.startswith('Anstoß'):
                 time = spans[i].text.split(' ')[2]
                 date = spans[i+1].text.split(' ')[1]
-                return datetime.strptime("{} {}".format(date, time), '%d.%m.%Y %H:%M').strftime('%Y-%m-%d %H:%M:%S')
+                return datetime.strptime("{} {}".format(date, time), '%d.%m.%Y %H:%M')
 
     def __find_string_with_colon_in_spans(self, spans):
         for span in spans:
