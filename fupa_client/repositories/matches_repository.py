@@ -1,4 +1,5 @@
 from time import sleep
+from datetime import datetime, timedelta
 
 from .. import helper as helper
 from ..models.match import Match
@@ -41,8 +42,12 @@ class MatchesRepository:
     def __matches_of_league(self):
         league_repository = LeagueRepository(self.team_url)
         league = league_repository.get_league()
+
+        last_sunday = self.__find_date_of_last_sunday().strftime('%Y-%m-%d')
+        link = league.leaguelink + '/matches?date=' + last_sunday
+
         selector = 'a[href*=\/match][enablehover*=true]'
-        soup = helper.soup_of_page(league.leaguelink + '/matches')
+        soup = helper.soup_of_page(link)
         return soup.select(selector)
 
     def __match_soup_to_dict(self, soup):
@@ -55,3 +60,6 @@ class MatchesRepository:
         except Exception as e:
             print('{}-{}'.format(e, link))
             return None
+
+    def __find_date_of_last_sunday(self):
+        return datetime.now() - timedelta(days=(datetime.now().isoweekday() % 7))
