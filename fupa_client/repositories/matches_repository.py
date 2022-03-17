@@ -12,15 +12,17 @@ class MatchesRepository:
         self.team_url = team_url
 
     def get_matches_as_dict(self):
-        matches_soups = self.__matches_of_team(previous=True) + self.__matches_of_team(previous=False)
-        return self.__create_matches_from_soup(matches_soups)
+        matches_soup = self.__matches_of_team(
+            previous=True) + self.__matches_of_team(previous=False)
+        return self.__create_matches_from_soup(matches_soup)
 
     def get_match_from_link_as_dict(self, link):
         match = Match.from_match_link(link)
         return match.to_dict()
 
     def get_matches_of_league_as_dict(self):
-        matches_soup = self.__matches_of_league()
+        matches_soup = self.__matches_of_league(
+            previous=True) + self.__matches_of_team(previous=False)
         return self.__create_matches_from_soup(matches_soup)
 
     def __create_matches_from_soup(self, soup):
@@ -41,12 +43,12 @@ class MatchesRepository:
             team.teamname, team.teamclass)
         return soup.select(selector)
 
-    def __matches_of_league(self):
+    def __matches_of_league(self, previous):
         league_repository = LeagueRepository(self.team_url)
         league = league_repository.get_league()
 
-        last_sunday = self.__find_date_of_last_sunday().strftime('%Y-%m-%d')
-        link = league.leaguelink + '/matches?date=' + last_sunday
+        link = league.leaguelink + '/matches' if previous == False else self.team_url + \
+            '/matches?pointer=prev'
 
         selector = 'a[href*=\/match][enablehover*=true]'
         soup = helper.soup_of_page(link)
