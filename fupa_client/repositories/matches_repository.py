@@ -12,7 +12,7 @@ class MatchesRepository:
         self.team_url = team_url
 
     def get_matches_as_dict(self):
-        matches_soups = self.__matches_of_team()
+        matches_soups = self.__matches_of_team(previous=True) + self.__matches_of_team(previous=False)
         return self.__create_matches_from_soup(matches_soups)
 
     def get_match_from_link_as_dict(self, link):
@@ -32,9 +32,11 @@ class MatchesRepository:
             sleep(3)
         return matches_list
 
-    def __matches_of_team(self):
+    def __matches_of_team(self, previous):
         team = Team.from_team_link(self.team_url)
-        soup = helper.soup_of_page(self.team_url + '/matches')
+        link = self.team_url + '/matches' if previous == False else self.team_url + \
+            '/matches?pointer=prev'
+        soup = helper.soup_of_page(link)
         selector = 'a[href*={}-{}][href*=\/match][enablehover*=true]'.format(
             team.teamname, team.teamclass)
         return soup.select(selector)
